@@ -5,15 +5,34 @@ import numpy as np
 import datetime as dt
 from astropy import units as u
 import mjd
-import .binaries as gb
+import binaries
 
-def get_system_parameters(binary_system, superorbital=False):
-    """ Returns the orbital parameters (T0, P and p.periastro) of the given binary systems.
-    The valid binary systems are the binary systems available in Sources package."""
+def get_system_parameters(binary_system: binaries.System, superorbital=False):
+    """Returns the orbital parameters (T0, P and p.periastro) of the given
+    binary systems.
+
+    Arguments
+        binary_system : binaries.System
+            The binary system to be considered.
+        superorbital : bool [default: False]
+            In case the system has a superorbital period, considers it instead
+            of the orbital one.
+
+    Returns
+        T0 : float
+            The epoch of reference for the orbit.
+        Period : float
+            The orbital period of the orbit.
+        phi0 : float
+            The orbital phase at which the periastron takes place.
+
+    Raises
+        KeyError -- in case any of the parameters is not found in the system
+            (it searches for t0, period, periastron_phase.
+    """
     # Copy the parameters from the imported file
     t0, p, phi = None, None, None
     try:
-        obj = gb.Binaries().get_binary(binary_system)
         if superorbital:
             t0 = obj.t0_superorbital.value
             p = obj.period_superorbital.value.to(u.d).value
@@ -24,59 +43,107 @@ def get_system_parameters(binary_system, superorbital=False):
             phi = 0.
         return t0, p, phi
     except KeyError:
-        print('ERROR: System not found in the list or attributes T0, P or phi not found.')
-        raise KeyError
-
-    # Check if the object has the parameters
+        raise KeyError('ERROR: Attributes t0, period and/or periastron_phase not found.')
 
 
+def date2phase(epoch, binary_system, superorbital=False):
+    """Return the orbital and post-periastron phase of the given binary system
+    for a given epoch entered as datetime.
 
-def date2phase(date, binary_system, superorbital=False):
-    """ Return the orbital and post-periastron phase of the given binary systm for the input date.
-    The date must be a datetime format."""
-    MJD = mjd.date2mjd(date)
-    pha, pha_pp = mjd2phase(MJD, binary_system, superorbital=superorbital)
-    return pha, pha_pp
+    Arguments
+        epoch : datetime
+            Epoch at which the orbital phases will be computed.
+        binary_system : binaries.System
+            The binary system to be considered.
+        superorbital : bool [default: False]
+            In case the superorbital period (instead of the normal one) need to be computed.
 
-def mjd2phase(mjd, binary_system, superorbital=False):
-    """ Return the orbital and post-periastron phase of the given binary systm for the input MJD.
-    The MJD is the Modified Julian Date."""
-    T0, P, per = get_system_parameters(binary_system, superorbital=superorbital)
-    phase = (mjd - T0)/P % 1
+    Returns
+        phase : float
+            The orbital phase at which the system is at the given epoch.
+        phase_postperiastron : float
+            The phase post-periastron at which the system is at the given epoch.
+    """
+    return mjd2phase(mjd.date2mjd(epoch), binary_system, superorbital=superorbital)
+
+
+def mjd2phase(epoch, binary_system, superorbital=False):
+    """Return the orbital and post-periastron phase of the given binary system
+    for a given epoch entered as Modified Julian Date.
+
+    Arguments
+        epoch : datetime
+            Epoch at which the orbital phases will be computed.
+        binary_system : binaries.System
+            The binary system to be considered.
+        superorbital : bool [default: False]
+            In case the superorbital period (instead of the normal one) need to be computed.
+
+    Returns
+        phase : float
+            The orbital phase at which the system is at the given epoch.
+        phase_postperiastron : float
+            The phase post-periastron at which the system is at the given epoch.
+    """
+    t0, p, per = get_system_parameters(binary_system, superorbital=superorbital)
+    phase = (epoch - t0)/p % 1
     phase_postperiastron = phase
     if per != 0 and per != None:
         phase_postperiastron = (phase - per + 1) % 1
     return phase, phase_postperiastron
 
-def phase2dates(phase, binary_system, inidate, enddate, postperiastron=False, superorbital=False):
-    """ Find all the dates at which the binary system is in a determinate phase for a given range of dates.
-    You can choose if that phase is or not a phase refered at the periastron (i.e. phase_postperiastron)
-    by default that is False.
-    Returns a list with these dates in MJD."""
-    T0, P, per = get_system_parameters(binary_system, superorbital=superorbital)
+
+def phase2dates(phase, binary_system, initdate, enddate, postperiastron=False,
+                superorbital=False):
+    """Find all the dates at which the binary system is in a determinate phase
+    for a given range of dates. You can choose if that phase is or not a phase
+    refered at the periastron (i.e. phase postperiastron; False by default).
+
+    Arguments
+        phase : float
+            Orbital phase to be computed.
+        binary_system : binaries.System
+            The binary system to be considered.
+        initdate : float
+            Minimum MJD epoch to compute.
+        enddate : float
+            Maximum MJD epoch to compute.
+        postperiastron : bool [default: Fasle]
+            In case the given phase is a post-periastron phase.
+        superorbital : bool [default: False]
+            In case the superorbital period (instead of the normal one) need to be computed.
+
+    Returns
+        times : list
+            List of all MJD dates at which the system is the given orbital phase
+            within the given temporal period.
+    """
+    t0, p, per = get_system_parameters(binary_system, superorbital=superorbital)
     # Determine a date at which the binary is in that phase:
     if postperiastron == True:
         phase = phase + per
-    dayzero = T0 + phase*P
+    dayzero = t0 + phase*p
     # Just to avoid possible problems... (I should to check this and improve...)
     if dayzero > inidate:
-        dayzero = dayzero - (np.ceil(dayzero/inidate))*P
-    n_min = int(np.ceil( (inidate - dayzero)/P ))
-    n_max = int(np.floor( (enddate - dayzero)/P ))
-    return [ dayzero + n*P for n in range(n_min, n_max+1) ]
+        dayzero = dayzero - (np.ceil(dayzero/inidate))*p
+    n_min = int(np.ceil( (inidate - dayzero)/p ))
+    n_max = int(np.floor( (enddate - dayzero)/p ))
+    return [ dayzero + n*p for n in range(n_min, n_max + 1) ]
 
 
 if __name__ == '__main__':
     """If it is interactive mode, asks recursively a date and returns the orbital phase
-    of the system on that date."""
+    of the system on that date.
+    NOTE: Have not touch the code since the very first version.
+    """
 
     months = { 'Jan':1, 'Feb':2, 'Mar':3, 'Apr':4, 'May':5, 'Jun':6, 'Jul':7, 'Aug':8,
     'Sep':9, 'Oct':10, 'Nov':11, 'Dec':12  }
     ask_for_system = [True, True]
-    binaries = gb.Binaries()
+    binaries = binaries.Binaries()
     while ask_for_system[0] == True:
         # Ask for the binary system and take its parameters
-        print('Tha evailable binary systems are:')
+        print('The available binary systems are:')
         binaries.list_binaries()
         binary = raw_input('Choose a binary system:\n')
         binary = binary.strip()
