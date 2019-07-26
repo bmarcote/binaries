@@ -7,7 +7,7 @@ from astropy import units as u
 import mjd
 import binaries
 
-def get_system_parameters(binary_system: binaries.System, superorbital=False):
+def get_system_parameters(binary_system, superorbital=False):
     """Returns the orbital parameters (T0, P and p.periastro) of the given
     binary systems.
 
@@ -34,14 +34,15 @@ def get_system_parameters(binary_system: binaries.System, superorbital=False):
     t0, p, phi = None, None, None
     try:
         if superorbital:
-            t0 = obj.t0_superorbital.value
-            p = obj.period_superorbital.value.to(u.d).value
-            phi = obj.periastron_phase.value
+            t0 = binary_system.t0_superorbital.value
+            p = binary_system.period_superorbital.value.to(u.d).value
+            phi = binary_system.periastron_phase.value
         else:
-            t0 = obj.t0.value
-            p = obj.period.value.to(u.d).value
+            t0 = binary_system.t0.value
+            p = binary_system.period.value.to(u.d).value
             phi = 0.
         return t0, p, phi
+
     except KeyError:
         raise KeyError('ERROR: Attributes t0, period and/or periastron_phase not found.')
 
