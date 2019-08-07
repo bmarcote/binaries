@@ -17,3 +17,10 @@ Reads all the binaries available under the `systems` directory and stores them i
 
 
 
+# To Do
+
+- Modify `binaries.py` to support proper motions from the init files (the `SkyCoord` part must be modified.
+  If it is provided, then a reference epoch should be provided.
+- Implement `astropy.time` in `date2phase.py` and `binaries.py`. It natively supports MJD conversions.
+
+

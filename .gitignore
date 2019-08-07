@@ -104,3 +104,6 @@ venv.bak/
 .mypy_cache/
 *.swp
 .gitignore
+orbit.py_ignore
+.gitignore
+orb_param.par

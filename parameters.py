@@ -68,7 +68,7 @@ class Parameter(object):
         self._reference = reference
 
     def __getitem__(self):
-        return self.value or self._default
+        return self._value
 
     def __setitem__(self, value):
         self._value = value
@@ -82,7 +82,7 @@ class Parameter(object):
             return '{0!r}: {1!r}'.format(self._name, self.value)
 
     def __call__(self):
-        return self.value
+        return self._value
 
     @property
     def name(self):

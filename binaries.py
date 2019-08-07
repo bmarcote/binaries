@@ -9,6 +9,7 @@ import os as _os
 import configparser as _configparser
 from astropy import units as u
 from astropy import coordinates
+from astropy import time
 from .parameters import Parameter
 
 __author__ = "Benito Marcote"
@@ -98,8 +99,29 @@ def read_sources_from_inifiles(path):
             # ra and dec are coordinates
             ra_units = eval(_config['ra']['unit'])
             dec_units = eval(_config['dec']['unit'])
-            coord_val = coordinates.SkyCoord(ra=ra.value, dec=dec.value, unit=(ra_units,dec_units))
-            coord_err = coordinates.SkyCoord(ra=ra.error, dec=dec.error, unit=(ra_units, dec_units))
+            distance = params['distance']
+            if 'mu_alpha_cos_delta' in params:  # It has proper motions defined!
+                pm_ra_cos_dec = params['mu_alpha_cos_delta']
+                pm_dec = params['mu_delta']
+                if 'ref_epoch' in params:
+                    ref_epoch = time.Time(params['ref_epoch'].value, format='mjd')
+                else:
+                    print('WARNING: Epoch J2000.0 is assumed for {}.'.format(source_name))
+                    ref_epoch = time.Time(2000.0, format='decimalyear')
+
+                coord_val = coordinates.SkyCoord(ra=ra.value, dec=dec.value, unit=(ra_units,dec_units),
+                                                 distance=distance.value, pm_ra_cosdec=pm_ra_cos_dec.value,
+                                                 pm_dec=pm_dec.value, obstime=ref_epoch)
+                coord_err = coordinates.SkyCoord(ra=ra.error, dec=dec.error, unit=(ra_units, dec_units),
+                                                 distance=distance.error)
+                                                 #pm_dec=pm_dec.value,
+                                                 #pm_ra_cosdec=pm_ra_cos_dec.value, obstime=ref_epoch)
+            else:
+                coord_val = coordinates.SkyCoord(ra=ra.value, dec=dec.value, unit=(ra_units,dec_units),
+                                                 distance=distance.value)
+                coord_err = coordinates.SkyCoord(ra=ra.error, dec=dec.error, unit=(ra_units, dec_units),
+                                                 distance=distance.value)
+
             ref = ra.reference.strip()
             if ref != dec.reference.strip():
                 ref = ','.join([ref, dec.reference.strip()])
