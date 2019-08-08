@@ -193,6 +193,21 @@ def apparent_position_angle(source, true_anomaly):
     return pa
 
 
+def apparent_delta_ra_dec(rho, theta):
+    """Converts an offset given as (rho, theta) to the one in (delta_RA, delta_DEC).
+
+    Parameters:
+        rho : float or astropy.units.Quantity
+            The apparent radial separation of the source.
+        theta : float or astropy.units.Quantity
+            The apparent position angle of the source.
+    Returns:
+        offset : (ra_offset, dec_offset)
+            The position offset of the object in RA and DEC.
+    """
+    return (rho*np.sin(theta), rho*np.cos(theta))
+
+
 def sky_offset_from_orbit(source, epoch):
     """Given a binary source, determines the position offset in the sky at the
     given epoch due to the orbital motion.
@@ -223,9 +238,7 @@ def sky_offset_from_orbit(source, epoch):
     rho = apparent_separation(source, ecc_anom).to(u.mas, equivalencies=u.parallax())
     theta = apparent_position_angle(source, true_anom)
     # Get the RA and DEC coordinates
-    x = rho*np.sin(theta)
-    y = rho*np.cos(theta)
-    return (x, y)
+    return apparent_delta_ra_dec(rho, theta)
 
 
 
