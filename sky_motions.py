@@ -235,7 +235,8 @@ def sky_offset_from_orbit(source, epoch):
     # Equations obtained from Descomps (2005).
     ecc_anom = eccentric_anomaly(source, mean_anomaly(source, epoch))
     true_anom = true_anomaly(source, ecc_anom)
-    rho = apparent_separation(source, ecc_anom).to(u.mas, equivalencies=u.parallax())
+    # To angular scales
+    rho = (apparent_separation(source, ecc_anom).to(u.AU).value/source.distance.value.to(u.kpc).value)*u.mas
     theta = apparent_position_angle(source, true_anom)
     # Get the RA and DEC coordinates
     return apparent_delta_ra_dec(rho, theta)
