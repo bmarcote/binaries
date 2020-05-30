@@ -10,7 +10,7 @@ import configparser as _configparser
 from astropy import units as u
 from astropy import coordinates
 from astropy import time
-from .parameters import Parameter
+from src.parameters import Parameter
 
 __author__ = "Benito Marcote"
 __copyright__ = "Copyright 2014, Benito Marcote"
@@ -138,7 +138,7 @@ class Binaries(object):
     def __init__(self):
         path = _os.path.abspath(__file__)
         dir_path = _os.path.dirname(path)
-        self._binaries = read_sources_from_inifiles(dir_path + '/systems/')
+        self._binaries = read_sources_from_inifiles(dir_path + '/data/')
         for key in self._binaries.keys():
             #print(key)
             setattr(self, key, self._binaries[key])
@@ -182,7 +182,7 @@ class Binaries(object):
         # Read again the init files and put the new attributes
         path = _os.path.abspath(__file__)
         dir_path = _os.path.dirname(path)
-        self._binaries = read_sources_from_inifiles(dir_path + '/systems/')
+        self._binaries = read_sources_from_inifiles(dir_path + '/data/')
         for key in _binaries.keys():
             print(key)
             setattr(self, key, self._binaries[key])
