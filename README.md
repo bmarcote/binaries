@@ -1,3 +1,5 @@
+<img src="logo.png" align="right" />
+
 # Binaries
 
 This project is intended to simplify the calculus of parameters and ephemerides from binary systems, like the epoch at which a particular orbital phase takes place or the determination of the orbit in the plane of the sky given the orbital parameters of a system.
