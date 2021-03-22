@@ -193,6 +193,15 @@ class WCR(object):
         rs = self.get_radius_from_theta(thetas)
         return rs*np.cos(thetas), rs*np.sin(thetas)
 
+    def get_x_y_z(self, theta_tolerance=15*u.deg):
+        rs = self.get_radius(theta_tolerance)
+        ts = self.get_thetas(theta_tolerance)
+        return rs*np.cos(ts)*np.sin(ts), rs*np.sin(ts)*np.sin(ts), rs*np.cos(ts)
+
+    def get_x_y_z_from_thetas(self, thetas):
+        rs = self.get_radius_from_theta(thetas)
+        return rs*np.cos(thetas)*np.sin(thetas), rs*np.sin(thetas)*np.sin(thetas), \
+               rs*np.cos(thetas)
 
     def tangential_velocity_from_theta(self, theta, v_ratio):
         """Returns the tangential velocity, directed along the shell, of the flow
