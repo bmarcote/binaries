@@ -36,11 +36,11 @@ def get_system_parameters(binary_system, superorbital=False):
         if superorbital:
             t0 = binary_system.t0_superorbital.value
             p = binary_system.period_superorbital.value.to(u.d).value
-            phi = binary_system.periastron_phase.value
+            phi = 0.
         else:
             t0 = binary_system.t0.value
             p = binary_system.period.value.to(u.d).value
-            phi = 0.
+            phi = binary_system.periastron_phase.value
         return t0, p, phi
 
     except KeyError:
@@ -89,7 +89,7 @@ def mjd2phase(epoch, binary_system, superorbital=False):
     t0, p, per = get_system_parameters(binary_system, superorbital=superorbital)
     phase = (epoch - t0)/p % 1
     phase_postperiastron = phase
-    if per != 0 and per != None:
+    if per != 0.0 and per != None:
         phase_postperiastron = (phase - per + 1) % 1
     return phase, phase_postperiastron
 
