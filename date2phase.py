@@ -125,9 +125,9 @@ def phase2dates(phase, binary_system, initdate, enddate, postperiastron=False,
         phase = phase + per
     dayzero = t0 + phase*p
     # Just to avoid possible problems... (I should to check this and improve...)
-    if dayzero > inidate:
-        dayzero = dayzero - (np.ceil(dayzero/inidate))*p
-    n_min = int(np.ceil( (inidate - dayzero)/p ))
+    if dayzero > initdate:
+        dayzero = dayzero - (np.ceil(dayzero/initdate))*p
+    n_min = int(np.ceil( (initdate - dayzero)/p ))
     n_max = int(np.floor( (enddate - dayzero)/p ))
     return [ dayzero + n*p for n in range(n_min, n_max + 1) ]
 
