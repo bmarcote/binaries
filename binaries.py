@@ -10,7 +10,7 @@ import configparser as _configparser
 from astropy import units as u
 from astropy import coordinates
 from astropy import time
-from src.parameters import Parameter
+from binaries.src.parameters import Parameter
 
 __author__ = "Benito Marcote"
 __copyright__ = "Copyright 2014, Benito Marcote"
